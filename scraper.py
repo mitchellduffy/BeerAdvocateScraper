@@ -1,5 +1,7 @@
 import requests
+import json
 from BeautifulSoup import BeautifulSoup
+
 
 class Scraper:
     def __init__(self):
@@ -44,7 +46,15 @@ class Scraper:
 scrap = Scraper()
 
 soup = scrap.get_beer_soup(0)
-beer_dict = scrap.get_beer_dict(soup)
+beer_dict_0 = scrap.get_beer_dict(soup)
+
+soup = scrap.get_beer_soup(25)
+beer_dict_25 = scrap.get_beer_dict(soup)
+
+beer_dict = dict(beer_dict_0.items() + beer_dict_25.items())
 
 print beer_dict
            
+with open("beer_dict.json", "w") as writeJSON:
+    json.dump(beer_dict, writeJSON)
+
