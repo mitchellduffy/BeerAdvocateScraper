@@ -6,8 +6,9 @@ class Scraper:
         self.url_beer_temp = "https://www.beeradvocate.com/search/?start=%d&q=ipa&qt=beer&retired=N"
 
     def get_beer_soup(self, start_number=0):
-        self.url_beer_ = self.url_beer_temp % start_number
-        return BeautifulSoup(requests.get(self.url_beer_).content) 
+        self.start_number_ = start_number
+        url_beer = self.url_beer_temp % self.start_number_
+        return BeautifulSoup(requests.get(url_beer).content) 
 
     def get_beer_dict(self, beer_soup, min_total_ratings=100):
         results = beer_soup.findAll('ul')
@@ -18,7 +19,9 @@ class Scraper:
             links.append("http://beeradvocate.com%s" % (link.find('a')['href']))
             
         beer_dict = {}
-        for beer in links:
+        for count, beer in enumerate(links):
+            print str(self.start_number_ + count + 1) + " of " + str(self.start_number_ + 25)
+
             soup = BeautifulSoup(requests.get(beer).content)
 
             ratings = soup.find('span', attrs={'class':'ba-ratings'}).getText()
@@ -33,6 +36,8 @@ class Scraper:
                 beer_dict[name]['link'] = beer
                 beer_dict[name]['ratings'] = ratings
                 beer_dict[name]['average'] = avg
+
+        return beer_dict
 
 
 
