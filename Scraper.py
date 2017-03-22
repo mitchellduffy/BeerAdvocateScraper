@@ -36,12 +36,46 @@ class UserScraper:
             views = total_counts / 50
             rest = total_counts % 50
 
-            for start_number in range(0,0): #range(0, views):
+            user_dict = {}
+            for start_number in range(0, views):
                 start = start_number * 50
                 url = "https://www.beeradvocate.com/user/beers/?start=%d&ba=%s&order=dateD&view=R" % (start, user)              
+                print url
                 soup = BeautifulSoup(requests.get(url).content)
-                return soup.prettify()
-                
+
+                user_dict[user] = {}
+                for entry in range(3, 53):
+                    results = soup.table.findAll('tr')
+                    style = results[entry].findAll('td')[2].findAll('a')[2].getText()
+
+                    if style in beer_list:
+                        link = results[entry].findAll('td')[2].find('a')['href']
+                        link = "http://beeradvocate.com%s" % link
+
+                        # enter the specific review page   
+                        soup_review = BeautifulSoup(requests.get(link).content)
+                        name = soup_review.find('title').getText().split('|')[0].strip()
+                        print name
+
+                        user_dict[user][name] = {}
+                        results_review = soup_review.find('div', attrs={'id':'rating_fullview'})
+
+                        avg = results_review.find('span', attrs={'class':'BAscore_norm'}).getText()
+                        infos = results_review.findAll('span', attrs={'class':'muted'})
+
+                        # quick fix - needed because infos are not always in first span tag
+                        # with class muted
+                        for i in range(0, len(infos)):
+                            if infos[i].getText().split()[0] == 'look:':
+                                final = infos[i]
+                        infos = final.getText().split()
+
+                        user_dict[user][name]['look'] = infos[1]
+                        user_dict[user][name]['smell'] = infos[4]
+                        user_dict[user][name]['taste'] = infos[7]
+                        user_dict[user][name]['feel'] = infos[10]  
+        return user_dict
+                                
           
 class BeerScraper:
     def __init__(self, start_number=0, search='ipa'):
